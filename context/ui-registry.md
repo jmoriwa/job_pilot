@@ -137,3 +137,63 @@ Last updated: 2026-06-11
 
 **Pattern notes:**
 Final CTA reuses the hero gradient and button pair so landing page entry and exit actions feel like the same system.
+
+### Login Page
+
+File: `app/(auth)/login/page.tsx`
+Last updated: 2026-06-12
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-background`, card uses `bg-surface`                               |
+| Border           | `border border-border`                                                |
+| Border radius    | `rounded-xl`, buttons use `rounded-md`                                |
+| Text - primary   | `text-text-primary`                                                   |
+| Text - secondary | `text-text-secondary`                                                 |
+| Spacing          | `px-6 py-12`, card `p-6`, `space-y-2`, `mt-8 space-y-3`               |
+| Hover state      | `hover:bg-surface-secondary`, `hover:bg-accent-dark`                  |
+| Shadow           | `shadow-sm`                                                           |
+| Accent usage     | `text-accent` eyebrow, `bg-accent text-accent-foreground` primary CTA |
+
+**Pattern notes:**
+Auth pages use a centered single card on the tokenized page background. OAuth actions are full-width 44px buttons, with secondary white and primary accent variants matching existing button tokens. Inline auth errors and setup warnings use `rounded-md border border-border bg-surface-secondary px-3 py-2 text-sm font-medium leading-5 text-error`.
+
+### Protected Route Shells
+
+File: `app/dashboard/page.tsx`, `app/profile/page.tsx`, `app/find-jobs/page.tsx`, `app/find-jobs/[id]/page.tsx`
+Last updated: 2026-06-11
+
+| Property         | Class                                           |
+| ---------------- | ----------------------------------------------- |
+| Background       | `bg-background`, content card uses `bg-surface` |
+| Border           | `border border-border`                          |
+| Border radius    | `rounded-xl`                                    |
+| Text - primary   | `text-text-primary`                             |
+| Text - secondary | `text-text-secondary`                           |
+| Spacing          | `px-8 py-8`, card `p-6`, heading `mt-2`         |
+| Hover state      | none                                            |
+| Shadow           | `shadow-sm`                                     |
+| Accent usage     | none                                            |
+
+**Pattern notes:**
+Temporary protected page shells use the standard white card on `bg-background` pattern and should be replaced by each feature's full UI without changing the route-level auth check.
+
+### App Header
+
+File: `components/layout/AppHeader.tsx`
+Last updated: 2026-06-12
+
+| Property         | Class                                                           |
+| ---------------- | --------------------------------------------------------------- |
+| Background       | `bg-surface`, logout button uses `bg-surface`                   |
+| Border           | `border-b border-border`, logout button uses `border border-border` |
+| Border radius    | logout button uses `rounded-md`                                 |
+| Text - primary   | `text-text-dark`, logout button uses `text-text-primary`        |
+| Text - secondary | none                                                            |
+| Spacing          | `h-16 px-6 gap-10`, logout button `px-4 py-2`                   |
+| Hover state      | `hover:text-accent`, logout button `hover:bg-surface-secondary` |
+| Shadow           | none                                                            |
+| Accent usage     | nav links use `hover:text-accent`                               |
+
+**Pattern notes:**
+Authenticated app routes use the same 64px white top-nav frame as the public navbar. The logout action is a secondary bordered button backed by a Server Action form.
