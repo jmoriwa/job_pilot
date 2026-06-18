@@ -14,7 +14,7 @@ export default async function FindJobsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <AppHeader userId={user.id} />
       <main className="px-8 py-8">
         <section className="mx-auto max-w-[1280px] rounded-xl border border-border bg-surface p-6 shadow-sm">
           <p className="text-sm font-medium leading-5 text-text-secondary">Find Jobs</p>

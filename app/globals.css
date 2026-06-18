@@ -122,3 +122,10 @@ body {
     var(--color-surface-secondary) 8px
   );
 }
+
+.profile-completion-ring {
+  background: conic-gradient(
+    var(--color-error) 0 70%,
+    color-mix(in srgb, var(--color-error) 16%, var(--color-surface)) 70% 100%
+  );
+}
