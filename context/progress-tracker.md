@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** Phase 2 - Profile Page
-**Last completed:** 07 AI Profile Extraction from Resume
-**Next:** 08 Resume PDF Generation from Profile
+**Phase:** Phase 3 - Find Jobs Page
+**Last completed:** 08 Resume PDF Generation from Profile
+**Next:** 09 Find Jobs Page - Full UI
 
 ---
 
@@ -26,7 +26,7 @@ Update this file after every completed feature. Any AI agent reading this should
 - [x] 05 Profile Page - Full UI
 - [x] 06 Profile Save Logic
 - [x] 07 AI Profile Extraction from Resume
-- [ ] 08 Resume PDF Generation from Profile
+- [x] 08 Resume PDF Generation from Profile
 
 ### Phase 3 - Find Jobs Page
 
@@ -104,3 +104,6 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-06-17: Adjusted the pdfjs worker fix after Turbopack rewrote `require.resolve()` into a bundled `[project]... [app-route]` pseudo-path. `agent/resume.ts` now constructs the worker path directly from `process.cwd()/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs` before converting it to a file URL for `PDFParse.setWorker()`. `npx tsc --noEmit`, scoped ESLint, and `npm run build` pass.
 - 2026-06-17: User confirmed Feature 07 resume extraction now works end to end after the direct `process.cwd()` pdfjs worker path fix. The working flow is private resume download from InsForge Storage, text extraction for text PDFs, scanned-PDF screenshot fallback for image PDFs, GPT-4o extraction, and review-before-save profile form fill.
 - 2026-06-17: Updated `ProfileFormShell` so after the Save Profile Server Action returns a status message, the page smooth-scrolls to the top. This keeps profile completion updates after save only, while bringing the user back to the banner/status area. `npx tsc --noEmit`, scoped ESLint, and `npm run build` pass.
+- 2026-06-18: Completed Feature 08 by adding `app/api/resume/generate/route.ts` and `agent/resumeGenerator.tsx`; the generate route reads the signed-in user's saved profile, asks GPT-4o for polished structured resume content, renders a server-side PDF with `@react-pdf/renderer`, uploads it to the active private resume path `resumes/{user_id}/resume.pdf`, updates `resume_pdf_url` and `resume_pdf_key`, and revalidates `/profile`.
+- 2026-06-18: Wired the existing `Generate Resume from Profile` button in `ResumeSection` to `/api/resume/generate` with generating, success, and error states. Resume generation uses saved profile data only; unsaved draft fields still require Save Profile before generation. Feature 07's review-before-save extraction flow remains unchanged.
+- 2026-06-18: After Feature 08, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, and `npm run build` pass. Local dev server is running at `http://localhost:3000`; `curl.exe -I http://localhost:3000/profile` returns 307 to `/login?next=%2Fprofile`. `npm install @react-pdf/renderer` completed and reported 4 audit vulnerabilities; no audit fix was run because dependency audit cleanup is outside Feature 08 scope.

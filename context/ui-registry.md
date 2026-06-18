@@ -281,7 +281,7 @@ Incomplete profile warnings use a white card with a subtle token-error border, t
 ### Resume Upload Card
 
 File: `components/profile/ResumeSection.tsx`
-Last updated: 2026-06-16
+Last updated: 2026-06-18
 
 | Property         | Class                                                                 |
 | ---------------- | --------------------------------------------------------------------- |
@@ -293,10 +293,10 @@ Last updated: 2026-06-16
 | Spacing          | `p-14`, `mt-12`, `px-6 py-16`, buttons `px-9 py-5`, action group `gap-4` |
 | Hover state      | `hover:bg-surface-secondary`, `hover:bg-accent-dark`                  |
 | Shadow           | `shadow-sm`                                                           |
-| Accent usage     | `text-accent`, `bg-accent text-accent-foreground`, extraction status uses success/error tokens |
+| Accent usage     | `text-accent`, `bg-accent text-accent-foreground`, extraction/generation status uses success/error tokens |
 
 **Pattern notes:**
-Resume upload keeps the page-card surface white and puts the drag/drop affordance inside a dashed secondary-surface panel. The upload control is a visually hidden `input[type="file"]` paired with a token-styled label matching the previous Select Resume button. On file selection, the component auto-submits the parent profile form, shows an uploading state with the selected file name, then shows `Uploaded {filename}` when the Server Action succeeds. When a resume URL exists, a bordered token-accent `View Current Resume` link appears inside the upload panel and opens `/api/resume/current` in a new tab so private storage is read through an authenticated app route, not by exposing the raw InsForge object URL. Feature 07 adds a secondary bordered `Extract from Resume` action in the footer action group when a current resume exists; it calls `/api/resume/extract`, shows `Extracting...` while pending, displays compact success/error status messages using the same token classes as profile form statuses, and fills the profile draft without saving. The generate action remains presentational until Feature 08.
+Resume upload keeps the page-card surface white and puts the drag/drop affordance inside a dashed secondary-surface panel. The upload control is a visually hidden `input[type="file"]` paired with a token-styled label matching the previous Select Resume button. On file selection, the component auto-submits the parent profile form, shows an uploading state with the selected file name, then shows `Uploaded {filename}` when the Server Action succeeds. When a resume URL exists, a bordered token-accent `View Current Resume` link appears inside the upload panel and opens `/api/resume/current` in a new tab so private storage is read through an authenticated app route, not by exposing the raw InsForge object URL. Feature 07 adds a secondary bordered `Extract from Resume` action in the footer action group when a current resume exists; it calls `/api/resume/extract`, shows `Extracting...` while pending, displays compact success/error status messages using the same token classes as profile form statuses, and fills the profile draft without saving. Feature 08 wires the accent `Generate Resume from Profile` action to `/api/resume/generate`; it shows `Generating...`, disables while a profile save/extract/generate operation is pending, displays compact success/error status messages, and reveals `View Current Resume` immediately after the generated PDF is saved.
 
 ### Profile Information Form
 
@@ -357,6 +357,26 @@ Last updated: 2026-06-16
 
 **Pattern notes:**
 Feature 07 introduced backend extraction only. The API route authenticates the user, downloads the saved private resume via `resume_pdf_key`, calls the resume extraction agent, and returns normalized draft profile data. It does not persist extracted fields; the existing profile save flow remains the only persistence path.
+
+### Resume Generation API
+
+File: `app/api/resume/generate/route.ts`, `agent/resumeGenerator.tsx`
+Last updated: 2026-06-18
+
+| Property         | Class |
+| ---------------- | ----- |
+| Background       | none  |
+| Border           | none  |
+| Border radius    | none  |
+| Text - primary   | none  |
+| Text - secondary | none  |
+| Spacing          | none  |
+| Hover state      | none  |
+| Shadow           | none  |
+| Accent usage     | none  |
+
+**Pattern notes:**
+Feature 08 introduced backend PDF generation only. The API route authenticates the user, reads the saved profile, calls the resume generation agent, uploads the generated PDF to the active private resume path, updates `resume_pdf_url` and `resume_pdf_key`, and revalidates `/profile`. The generation agent uses GPT-4o for structured resume content and `@react-pdf/renderer` for server-side PDF rendering.
 
 ### Profile Submit Button
 

@@ -1,52 +1,46 @@
-# Memory - Feature 07 Resume Extraction
+# Memory - Feature 08 Resume PDF Generation
 
-Last updated: 2026-06-17
+Last updated: 2026-06-18
 
 ## What was built
 
-Completed Feature 07 AI Profile Extraction from Resume.
+Completed Feature 08 Resume PDF Generation from Profile.
 
 Created:
-- `app/api/resume/extract/route.ts`
-- `agent/resume.ts`
+- `app/api/resume/generate/route.ts`
+- `agent/resumeGenerator.tsx`
 
 Modified:
 - `components/profile/ResumeSection.tsx`
-- `components/profile/ProfileFormShell.tsx`
-- `app/profile/page.tsx`
-- `lib/profile.ts`
 - `package.json`
 - `package-lock.json`
 - `context/progress-tracker.md`
 - `context/ui-registry.md`
 
-Feature 07 now:
-- Reads the signed-in user's saved private resume from InsForge Storage using `resume_pdf_key`.
-- Extracts text from text-based PDFs with `pdf-parse`.
-- Falls back for scanned/image-based PDFs by rendering up to the first 2 pages at 1000px width and sending those page images to GPT-4o vision.
-- Normalizes OpenAI output through `lib/profile.ts`.
-- Fills the visible profile form as a draft for review.
-- Does not save extracted fields until the user clicks Save Profile.
-- Smooth-scrolls to the top after the Save Profile Server Action returns a status message, so the user sees the updated completion banner/status area.
+Feature 08 now:
+- Uses the signed-in user's saved `profiles` table data as the source of truth.
+- Calls GPT-4o to generate polished structured resume content.
+- Renders a server-side PDF with `@react-pdf/renderer`.
+- Uploads the generated PDF to the active private resume path `resumes/{user_id}/resume.pdf`.
+- Updates `profiles.resume_pdf_url` and `profiles.resume_pdf_key`.
+- Revalidates `/profile`.
+- Wires the existing `Generate Resume from Profile` button to `/api/resume/generate`.
+- Shows generating, success, and error states in the resume card.
+- Reveals `View Current Resume` immediately after generation succeeds.
 
 ## Decisions made
 
-- Resume extraction is review-before-save. The extraction route returns draft profile data only; the existing `saveProfile` Server Action remains the persistence path.
-- Text-based PDF extraction stays the primary path because it is faster and cheaper.
-- Scanned/image PDFs are supported through a GPT-4o vision fallback rather than adding a separate OCR dependency.
-- The scanned-PDF fallback uses a small image payload by default: first 2 pages, 1000px wide.
-- The pdfjs worker path is configured manually from `process.cwd()/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs` and converted to a file URL before calling `PDFParse.setWorker()`. Do not switch this back to `require.resolve()`; Turbopack rewrites that into a bundled pseudo-path that fails at runtime.
-- User-facing extraction errors are human-readable and safe. Server logs may include diagnostic status/code/request metadata, but no secrets are persisted.
-- Profile completion still updates only after Save Profile; the new scroll behavior simply returns the user to the updated banner/status area after save.
+- Resume generation uses saved profile data only. Unsaved draft fields from the form are not included until the user clicks Save Profile.
+- The generated resume replaces the active current resume at the existing private storage path.
+- Feature 07's extraction behavior remains review-before-save; generation did not change that flow.
+- The installed InsForge SDK `storage.upload()` only accepts `(path, file)` in this version, so the implementation matches the existing upload pattern instead of passing an unsupported `upsert` option.
+- `@react-pdf/renderer` is now an installed dependency because Feature 08 explicitly requires server-side PDF rendering.
 
 ## Problems solved
 
-- Fixed stale generic extraction error handling. `ResumeSection` now parses JSON and non-JSON responses separately and no longer contains the old fallback string `Could not extract profile details from this resume.`
-- Diagnosed that the user's uploaded PDF was image/scanned enough that normal text extraction returned too little text.
-- Added scanned-PDF support via `pdf-parse` screenshots plus GPT-4o vision.
-- Fixed the pdfjs worker failure where Next/Turbopack first looked for `.next/dev/server/chunks/pdf.worker.mjs`, then rewrote `require.resolve()` into a `[project]... [app-route]` pseudo-path. The direct `process.cwd()` worker path fixed it.
-- Added post-save smooth scroll to top in `ProfileFormShell` after the Server Action returns a status message.
-- User confirmed the extraction flow now works perfectly.
+- `@react-pdf/renderer` was missing from `package.json`; installed it for Feature 08.
+- TypeScript rejected passing a Node `Buffer` directly into `Blob`. Fixed by copying the generated buffer into a plain `Uint8Array` before creating the PDF upload `Blob`.
+- Confirmed the running dev server is reachable with `curl.exe`; `Invoke-WebRequest` reported `DOWN`, but TCP and curl checks showed localhost was responding.
 
 ## Current state
 
@@ -57,29 +51,32 @@ Feature 07 now:
 - Feature 05 Profile Page - Full UI is complete.
 - Feature 06 Profile Save Logic is complete.
 - Feature 07 AI Profile Extraction from Resume is complete and confirmed working.
-- Profile save now scrolls to the top after the save response so the updated progress banner/status area is visible.
-- Next feature is Feature 08 Resume PDF Generation from Profile.
-- `progress-tracker.md` is updated through Feature 07, including the scanned-PDF fallback and final user confirmation.
-- `ui-registry.md` is updated for the Feature 07 ResumeSection/ProfileFormShell extraction UI patterns.
+- Feature 08 Resume PDF Generation from Profile is complete.
+- Current project phase is Phase 3 - Find Jobs Page.
+- Next feature is Feature 09 Find Jobs Page - Full UI.
+- `progress-tracker.md` is updated through Feature 08.
+- `ui-registry.md` is updated for the Feature 08 resume generation UI/API patterns.
 - Full `npm run lint` is still known to fail because ESLint scans `.agents/skills/...` helper scripts; use the scoped lint command.
+- `npm install @react-pdf/renderer` reported 4 audit vulnerabilities. No audit fix was run because dependency audit cleanup was outside Feature 08 scope.
 
-Verified after Feature 07 work:
+Verified after Feature 08 work:
 - `npx tsc --noEmit`
 - `npx eslint app components actions lib agent proxy.ts`
 - `npm run build`
+- Local smoke check: `curl.exe -I http://localhost:3000/profile` returns 307 to `/login?next=%2Fprofile`.
 
 ## Next session starts with
 
-Run `/remember restore`, then begin Feature 08 Resume PDF Generation from Profile from `context/build-plan.md`.
+Run `/remember restore`, then begin Feature 09 Find Jobs Page - Full UI from `context/build-plan.md`.
 
-Before implementing Feature 08:
+Before implementing Feature 09:
 - Read the required context files from `AGENTS.md`.
-- Use relevant installed skills/docs before touching OpenAI, InsForge, Next.js, or PDF generation APIs.
-- Preserve Feature 07's review-before-save extraction flow.
-- Keep `agent/resume.ts` pdfjs worker setup intact unless replacing the scanned-PDF rendering strategy entirely.
-- Feature 08 should generate a clean professional resume PDF from current saved profile data, upload it to InsForge Storage at the existing active resume path, and update `resume_pdf_url` / `resume_pdf_key`.
+- Use `/architect` because Feature 09 is a full page UI feature.
+- Preserve the existing top-nav protected route shell and route-level auth check.
+- Build with mock data first, no Adzuna or database logic yet.
+- Use project tokens only; no raw Tailwind color classes or hardcoded component colors.
 - Update `context/progress-tracker.md` and `context/ui-registry.md` after the feature.
 
 ## Open questions
 
-- None for Feature 07.
+- None for Feature 08.

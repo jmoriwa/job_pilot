@@ -18,12 +18,28 @@ type ResumeExtractResponse = {
   error?: string;
 };
 
+type ResumeGenerateResponse = {
+  success: boolean;
+  data?: {
+    resumeUrl: string;
+  };
+  error?: string;
+};
+
 type ExtractionStatus = {
   success: boolean;
   message: string;
 };
 
 function isResumeExtractResponse(value: unknown): value is ResumeExtractResponse {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  return "success" in value && typeof value.success === "boolean";
+}
+
+function isResumeGenerateResponse(value: unknown): value is ResumeGenerateResponse {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return false;
   }
@@ -41,6 +57,18 @@ function getExtractionErrorMessage(response: Response, result: ResumeExtractResp
   }
 
   return `Resume extraction returned an error without details (${response.status}). Check the dev server console for details.`;
+}
+
+function getGenerationErrorMessage(response: Response, result: ResumeGenerateResponse): string {
+  if (result.error) {
+    return result.error;
+  }
+
+  if (response.ok) {
+    return "Resume generation returned an incomplete success response. Check the dev server console for details.";
+  }
+
+  return `Resume generation returned an error without details (${response.status}). Check the dev server console for details.`;
 }
 
 async function readExtractResponse(response: Response): Promise<ResumeExtractResponse> {
@@ -71,18 +99,54 @@ async function readExtractResponse(response: Response): Promise<ResumeExtractRes
   };
 }
 
+async function readGenerateResponse(response: Response): Promise<ResumeGenerateResponse> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    const result: unknown = await response.json();
+
+    if (isResumeGenerateResponse(result)) {
+      return result;
+    }
+
+    return {
+      success: false,
+      error: `Resume generation returned an unexpected response (${response.status}).`,
+    };
+  }
+
+  const text = await response.text();
+  console.error("[ResumeSection] Non-JSON generation response", {
+    status: response.status,
+    preview: text.slice(0, 240),
+  });
+
+  return {
+    success: false,
+    error: `Resume generation failed on the server (${response.status}). Check the dev server console for details.`,
+  };
+}
+
 export function ResumeSection({ resumeUrl, onProfileExtracted }: ResumeSectionProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [extracting, setExtracting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generatedResumeUrl, setGeneratedResumeUrl] = useState("");
   const [extractionStatus, setExtractionStatus] = useState<ExtractionStatus>({
+    success: false,
+    message: "",
+  });
+  const [generationStatus, setGenerationStatus] = useState<ExtractionStatus>({
     success: false,
     message: "",
   });
   const { pending } = useFormStatus();
   const actionState = useProfileFormState();
-  const hasCurrentResume = Boolean(actionState.resumeUrl ?? resumeUrl);
-  const currentResumeName = actionState.resumeName ?? "current resume";
+  const hasCurrentResume = Boolean(generatedResumeUrl || actionState.resumeUrl || resumeUrl);
+  const currentResumeName = generatedResumeUrl
+    ? "generated resume"
+    : (actionState.resumeName ?? "current resume");
   const uploadedSelectedResume =
     Boolean(selectedFileName) &&
     actionState.success &&
@@ -136,6 +200,45 @@ export function ResumeSection({ resumeUrl, onProfileExtracted }: ResumeSectionPr
       });
     } finally {
       setExtracting(false);
+    }
+  }
+
+  async function handleGenerateResume(): Promise<void> {
+    setGenerating(true);
+    setGenerationStatus({ success: false, message: "" });
+
+    try {
+      const response = await fetch("/api/resume/generate", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      const result = await readGenerateResponse(response);
+
+      if (!response.ok || !result.success || !result.data) {
+        setGenerationStatus({
+          success: false,
+          message: getGenerationErrorMessage(response, result),
+        });
+        return;
+      }
+
+      setGeneratedResumeUrl(result.data.resumeUrl);
+      setGenerationStatus({
+        success: true,
+        message: "Resume generated from your saved profile. View the current resume to review it.",
+      });
+    } catch (error) {
+      console.error("[ResumeSection]", error);
+      setGenerationStatus({
+        success: false,
+        message:
+          "Resume generation could not reach the server. Check that the dev server is running and try again.",
+      });
+    } finally {
+      setGenerating(false);
     }
   }
 
@@ -202,6 +305,17 @@ export function ResumeSection({ resumeUrl, onProfileExtracted }: ResumeSectionPr
             {extractionStatus.message}
           </p>
         ) : null}
+        {generationStatus.message ? (
+          <p
+            className={`mt-6 rounded-xl border px-6 py-4 text-xl font-bold leading-7 ${
+              generationStatus.success
+                ? "border-success-light bg-success-lightest text-success-foreground"
+                : "border-error/20 bg-error/5 text-error"
+            }`}
+          >
+            {generationStatus.message}
+          </p>
+        ) : null}
         <label
           htmlFor="resume"
           className="mt-12 rounded-xl border border-border bg-surface px-9 py-5 text-2xl font-bold leading-8 text-text-dark shadow-sm transition hover:bg-surface-secondary"
@@ -237,7 +351,9 @@ export function ResumeSection({ resumeUrl, onProfileExtracted }: ResumeSectionPr
           ) : null}
           <button
             type="button"
-            className="inline-flex items-center justify-center gap-4 rounded-xl bg-accent px-9 py-5 text-2xl font-bold leading-8 text-accent-foreground shadow-sm transition hover:bg-accent-dark"
+            onClick={handleGenerateResume}
+            disabled={generating || extracting || pending}
+            className="inline-flex items-center justify-center gap-4 rounded-xl bg-accent px-9 py-5 text-2xl font-bold leading-8 text-accent-foreground shadow-sm transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-70"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7">
               <path
@@ -249,7 +365,7 @@ export function ResumeSection({ resumeUrl, onProfileExtracted }: ResumeSectionPr
                 strokeWidth="2"
               />
             </svg>
-            Generate Resume from Profile
+            {generating ? "Generating..." : "Generate Resume from Profile"}
           </button>
         </div>
       </div>
