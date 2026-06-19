@@ -417,3 +417,203 @@ Last updated: 2026-06-12
 
 **Pattern notes:**
 Authenticated headers can receive `activeHref` to render icon + text nav items with an accent underline. Profile hides logout only to match the provided mockup; other protected routes keep the existing sign-out action.
+
+### Find Jobs Search Controls
+
+File: `components/find-jobs/SearchControls.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-surface`, success banner uses `bg-success-lightest`, error banner uses `bg-error/5` |
+| Border           | `border border-border`, success banner uses `border-success-light`, error banner uses `border-error/20` |
+| Border radius    | `rounded-xl`, success banner uses `rounded-md`                        |
+| Text - primary   | `text-text-primary`, button uses `text-accent-foreground`, error uses `text-error` |
+| Text - secondary | `text-text-dark`, placeholders use `placeholder:text-text-muted`      |
+| Spacing          | `p-8`, inputs `h-14 px-4`, button `h-14 px-8`, banner `mt-5 px-5`     |
+| Hover state      | `hover:bg-accent-dark`, disabled uses `disabled:cursor-not-allowed disabled:opacity-70` |
+| Shadow           | `shadow-sm`                                                           |
+| Accent usage     | `bg-accent text-accent-foreground`, success status uses success tokens |
+
+**Pattern notes:**
+Find Jobs search controls use a wide white card matching the screenshot, with uppercase field labels, large rounded inputs, an accent search button, and a compact status banner below the controls. Feature 10 made this a client form that posts to `/api/agent/find`, shows `Finding...` while pending, renders success or user-safe error messages with token-colored status styles, and navigates to `/find-jobs?runId={id}` after a successful search so the server-rendered jobs table shows that search's saved results.
+
+### Find Jobs Filter Toolbar
+
+File: `components/find-jobs/JobFilters.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                            |
+| ---------------- | ---------------------------------------------------------------- |
+| Background       | `bg-surface`                                                     |
+| Border           | `border border-border`, divider uses `bg-border`                 |
+| Border radius    | `rounded-xl`, dropdown buttons use `rounded-md`                  |
+| Text - primary   | `text-text-primary`                                              |
+| Text - secondary | `text-text-muted`, dropdown icons use `text-text-secondary`      |
+| Spacing          | `px-6 py-3`, search `h-12 gap-3`, selects `h-12 px-4 pr-11`, actions `h-12 px-5` |
+| Hover state      | `hover:bg-surface-secondary`, primary action uses `hover:bg-accent-dark` |
+| Shadow           | `shadow-sm`                                                      |
+| Accent usage     | `bg-accent text-accent-foreground`, `focus:border-accent focus:ring-accent` |
+
+**Pattern notes:**
+Filter bars use one compact white toolbar with a left search field, a token border divider, and secondary select-style controls on the right. Feature 11 makes the toolbar a GET form targeting `/find-jobs`: text search writes `q`, match filter writes `filter`, sort writes `sort`, and the form preserves `runId` after a completed search. The Apply action uses the accent button pattern and Clear returns to the unfiltered view while preserving the active run scope.
+
+### Find Jobs Table
+
+File: `components/find-jobs/JobsTable.tsx`, `components/find-jobs/JobsPagination.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-surface`, header uses `bg-surface-secondary`                      |
+| Border           | `border border-border`, rows use `border-t border-border`             |
+| Border radius    | outer card uses `rounded-xl`, logo placeholders and buttons use `rounded-md` |
+| Text - primary   | `text-text-primary`, row body uses `text-text-dark`                   |
+| Text - secondary | `text-text-secondary`, disabled pagination uses `text-text-muted`     |
+| Spacing          | header/rows `px-10 py-6`, pagination `px-8 py-5`, row icon `h-11 w-11` |
+| Hover state      | `hover:bg-surface-secondary`                                         |
+| Shadow           | outer card uses `shadow-sm`, pagination buttons use `shadow-sm`       |
+| Accent usage     | score bars use `bg-success`, `bg-info-medium`, `bg-warning`; active page uses `bg-accent-muted text-accent` |
+
+**Pattern notes:**
+Feature 09 job rows follow the screenshot rather than the build-plan table text: columns are Company, Role, Match Score, Salary Est., and Date Found, with no Source column. Feature 10 renders the signed-in user's saved search jobs from InsForge instead of mock data, scopes the table to the active `runId` query param after each completed search, shows an empty state before saved matches exist, and links each row to `/find-jobs/{id}`. Feature 11 wires the footer pagination to query params, preserves `runId`, `q`, `filter`, and `sort` across page links, shows accurate `Showing X to Y of Z` counts for 20-row pages, and displays a compact `Jobs by Adzuna` credit below the count. Match bars use token colors with bucketed static Tailwind width classes so dynamic scores can render without raw CSS values.
+
+### Job Details Page
+
+File: `app/find-jobs/[id]/page.tsx`, `components/job-details/*.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-background`, cards use `bg-surface`, secondary icon wells and preview notice use `bg-surface-secondary` |
+| Border           | `border border-border`, company research header uses `border-b border-border` |
+| Border radius    | cards and primary buttons use `rounded-xl`, skill badges use `rounded-full` |
+| Text - primary   | headings and body use `text-text-primary`, actions use `text-accent-foreground`, errors use `text-error` |
+| Text - secondary | labels and muted copy use `text-text-secondary`, `text-text-muted`    |
+| Spacing          | page `px-8 py-12`, stack `space-y-7`, cards `p-7`, dossier body `space-y-8 p-7`, preview notice `mt-6 p-4`, badges `px-4 py-1` |
+| Hover state      | `hover:text-accent`, `hover:bg-surface-secondary`, `hover:bg-accent-dark`, disabled action uses `disabled:cursor-not-allowed disabled:opacity-70` |
+| Shadow           | cards and buttons use `shadow-sm`                                     |
+| Accent usage     | match badge uses `bg-success-lightest text-success-foreground`; gap skills, dossier tags, bullets, and research icon use `bg-accent-muted text-accent` / `bg-accent`; primary actions use `bg-accent text-accent-foreground` |
+
+**Pattern notes:**
+Feature 12 uses a centered `max-w-[880px]` detail column on the app background. The header card pairs a square company placeholder with the job title, company name, match score pill, and a secondary external-post button. Info cards are compact white cards with token-tinted icon wells for salary, location, job type, and date found. Content sections are stacked white cards with 28px padding, bold compact section labels, and real DB text. Feature 13 keeps the Company Research header/action treatment, adds an inline pending/error client action, and renders the generated dossier as compact uppercase sections with token accent tags, bullets, and source links. The job description card now shows a secondary-surface preview notice with a compact accent action when the saved source text appears truncated; successful loads refresh the server-rendered page.
+
+### Job Description Source Link
+
+File: `components/job-details/LoadFullDescriptionButton.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | notice uses `bg-surface-secondary`, action uses `bg-accent`, errors use `bg-error/5` |
+| Border           | `border border-border`, errors use `border-error/20`                  |
+| Border radius    | `rounded-xl`, errors use `rounded-md`                                 |
+| Text - primary   | action uses `text-accent-foreground`, errors use `text-error`         |
+| Text - secondary | preview note uses `text-text-secondary`                               |
+| Spacing          | notice `mt-6 p-4`, action `h-11 px-5`, error `mt-3 px-3 py-2`         |
+| Hover state      | `hover:bg-accent-dark`, disabled uses `disabled:cursor-not-allowed disabled:opacity-70` |
+| Shadow           | action uses `shadow-sm`                                               |
+| Accent usage     | compact primary action uses `bg-accent text-accent-foreground`        |
+
+**Pattern notes:**
+The source link is a recovery path for Adzuna preview snippets, not a generic card. It appears only when the saved/displayed description looks truncated and opens the saved source/apply URL in a new tab. Browserbase extraction was removed for this flow because Adzuna can return an Access Denied page to automated requests; the user should read the full original post at the source.
+
+### Company Research API
+
+File: `app/api/agent/research/route.ts`, `agent/research.ts`, `lib/browserbase.ts`
+Last updated: 2026-06-19
+
+| Property         | Class |
+| ---------------- | ----- |
+| Background       | none  |
+| Border           | none  |
+| Border radius    | none  |
+| Text - primary   | none  |
+| Text - secondary | none  |
+| Spacing          | none  |
+| Hover state      | none  |
+| Shadow           | none  |
+| Accent usage     | none  |
+
+**Pattern notes:**
+Feature 13 introduced backend research only for these files. The API route authenticates the user, loads owner-scoped job/profile data, saves the completed dossier to `jobs.company_research`, fires `company_researched`, and returns `{ success, data: { dossier } }`. The research agent owns Browserbase/Stagehand browsing and GPT-4o synthesis, always closes Stagehand in `finally`, and still synthesizes from job/profile data when browser research is thin or unavailable.
+
+### Dashboard Page
+
+File: `app/dashboard/page.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-background`                                                       |
+| Border           | none at route level                                                   |
+| Border radius    | none at route level                                                   |
+| Text - primary   | inherited from dashboard components                                   |
+| Text - secondary | inherited from dashboard components                                   |
+| Spacing          | page `px-8 py-12`, content `max-w-[2360px] space-y-10`, chart grid `gap-10 xl:grid-cols-12` |
+| Hover state      | none                                                                  |
+| Shadow           | none at route level                                                   |
+| Accent usage     | `AppHeader` uses `activeHref="/dashboard"`                            |
+
+**Pattern notes:**
+Feature 14 replaces the protected placeholder with the full mock dashboard from `context/designs/dashboard.png`. The route remains a Server Component and intentionally does not render the profile attention banner on `/dashboard`, because the uploaded dashboard design starts directly with the stat cards. Real stat, activity, and PostHog chart data remain deferred to Features 15-17.
+
+### Dashboard Stats Bar
+
+File: `components/dashboard/StatsBar.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | cards use `bg-surface`                                                |
+| Border           | `border border-border`                                                |
+| Border radius    | `rounded-xl`, trend badges use `rounded-sm`                           |
+| Text - primary   | stat value uses `text-text-primary`                                   |
+| Text - secondary | labels use `text-text-secondary`, helper text uses `text-text-muted`  |
+| Spacing          | grid `gap-6`, card `p-8`, value `mt-2`, footer `mt-4 gap-3`           |
+| Hover state      | none                                                                  |
+| Shadow           | `shadow-sm`                                                           |
+| Accent usage     | trend badges use `bg-success-lightest text-success-darker`            |
+
+**Pattern notes:**
+Dashboard stat cards are mock-only for Feature 14 and use the screenshot values: Total Jobs Found, Avg. Match Rate, Companies Researched, and Jobs This Week. The first two cards show compact square trend badges; the latter two show muted helper text only.
+
+### Dashboard Recent Activity
+
+File: `components/dashboard/RecentActivity.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | `bg-surface`                                                          |
+| Border           | `border border-border`, header uses `border-b border-border`         |
+| Border radius    | `rounded-xl`, activity dots use `rounded-full`                        |
+| Text - primary   | activity labels use `text-text-primary`                               |
+| Text - secondary | timestamps use `text-text-muted`                                      |
+| Spacing          | header `px-8 py-7`, body `px-8 py-8`, list `space-y-8`, rows `gap-6` |
+| Hover state      | none                                                                  |
+| Shadow           | `shadow-sm`                                                           |
+| Accent usage     | dots use `bg-accent-light/bg-accent`, `bg-info-light/bg-info`, and `bg-success-light/bg-success-alt` |
+
+**Pattern notes:**
+The activity list uses a simple vertical timeline with token-colored dots and a subtle connector line. Feature 14 activity entries are mock strings and timestamps only; real activity merging is deferred to Feature 16.
+
+### Dashboard Analytics Charts
+
+File: `components/dashboard/AnalyticsCharts.tsx`
+Last updated: 2026-06-19
+
+| Property         | Class                                                                 |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | chart cards use `bg-surface`                                          |
+| Border           | `border border-border`, grid lines use `border-t border-dashed border-border` |
+| Border radius    | cards use `rounded-xl`, bars use `rounded-md`                         |
+| Text - primary   | chart titles use `text-text-primary`                                  |
+| Text - secondary | axis labels use `text-text-muted`                                     |
+| Spacing          | cards `p-8`, charts `mt-14`, plot area `h-72`, bar wells `left-14 right-0 gap-5`, labels `ml-14 mt-4` |
+| Hover state      | none                                                                  |
+| Shadow           | `shadow-sm`                                                           |
+| Accent usage     | company bars use `bg-info`, match bars use `bg-success`, jobs line uses `text-accent` and token SVG stops |
+
+**Pattern notes:**
+Feature 14 charts are static mock visuals built with CSS and SVG instead of a charting dependency. The parent dashboard grid gives Company Research Activity `xl:col-span-6`, Jobs Found Over Time `xl:col-span-8`, and Match Score Distribution `xl:col-span-4` to match the screenshot's top-half and bottom two-thirds/one-third layout. Axis labels are normal-flow content below the plot area, not negatively positioned, so they stay inside their cards and score bucket labels use `whitespace-nowrap`.

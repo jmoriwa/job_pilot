@@ -1,82 +1,94 @@
-# Memory - Feature 08 Resume PDF Generation
+# Memory - Features 13-14 Company Research and Dashboard
 
-Last updated: 2026-06-18
+Last updated: 2026-06-19 13:58 America/Chicago
 
 ## What was built
 
-Completed Feature 08 Resume PDF Generation from Profile.
+Completed Feature 13 Company Research Agent.
+
+Created or modified the company research flow:
+- `app/api/agent/research/route.ts`
+- `agent/research.ts`
+- `lib/browserbase.ts`
+- `components/job-details/ResearchCompanyButton.tsx`
+- `components/job-details/CompanyResearchCard.tsx`
+- `app/find-jobs/[id]/page.tsx`
+
+Completed Feature 14 Dashboard Page - Full UI with mock data.
 
 Created:
-- `app/api/resume/generate/route.ts`
-- `agent/resumeGenerator.tsx`
+- `components/dashboard/StatsBar.tsx`
+- `components/dashboard/RecentActivity.tsx`
+- `components/dashboard/AnalyticsCharts.tsx`
 
 Modified:
-- `components/profile/ResumeSection.tsx`
-- `package.json`
-- `package-lock.json`
+- `app/dashboard/page.tsx`
 - `context/progress-tracker.md`
 - `context/ui-registry.md`
 
-Feature 08 now:
-- Uses the signed-in user's saved `profiles` table data as the source of truth.
-- Calls GPT-4o to generate polished structured resume content.
-- Renders a server-side PDF with `@react-pdf/renderer`.
-- Uploads the generated PDF to the active private resume path `resumes/{user_id}/resume.pdf`.
-- Updates `profiles.resume_pdf_url` and `profiles.resume_pdf_key`.
-- Revalidates `/profile`.
-- Wires the existing `Generate Resume from Profile` button to `/api/resume/generate`.
-- Shows generating, success, and error states in the resume card.
-- Reveals `View Current Resume` immediately after generation succeeds.
+Also resolved the Job Details description preview issue:
+- `components/job-details/LoadFullDescriptionButton.tsx` now links users directly to the saved source/apply URL instead of trying Browserbase extraction.
+- Removed the attempted automated full-description extraction route/agent after Adzuna returned Access Denied to automated browsing.
 
 ## Decisions made
 
-- Resume generation uses saved profile data only. Unsaved draft fields from the form are not included until the user clicks Save Profile.
-- The generated resume replaces the active current resume at the existing private storage path.
-- Feature 07's extraction behavior remains review-before-save; generation did not change that flow.
-- The installed InsForge SDK `storage.upload()` only accepts `(path, file)` in this version, so the implementation matches the existing upload pattern instead of passing an unsupported `upsert` option.
-- `@react-pdf/renderer` is now an installed dependency because Feature 08 explicitly requires server-side PDF rendering.
+- Feature 13 uses one Browserbase/Stagehand session for company website research and always closes it in `finally`.
+- Company research derives an employer homepage from the Adzuna redirect when possible, then falls back safely and still synthesizes a complete dossier if browser research is thin or fails.
+- Company research saves the dossier into `jobs.company_research` and renders all nine dossier fields in the existing Job Details card.
+- Feature 14 is mock UI only. Real dashboard stat/activity/PostHog data remains deferred to Features 15-17.
+- For Feature 14, `context/designs/dashboard.png` is the visual source of truth over the build-plan wording where they differ.
+- The dashboard fourth stat is `Jobs This Week`, not `Cover Letters Generated`.
+- The dashboard top chart is `Company Research Activity`.
+- The dashboard must not render the `Profile needs attention` banner because the uploaded design does not show it.
+- Dashboard charts are static CSS/SVG mock visuals, not a new charting dependency.
 
 ## Problems solved
 
-- `@react-pdf/renderer` was missing from `package.json`; installed it for Feature 08.
-- TypeScript rejected passing a Node `Buffer` directly into `Blob`. Fixed by copying the generated buffer into a plain `Uint8Array` before creating the PDF upload `Blob`.
-- Confirmed the running dev server is reachable with `curl.exe`; `Invoke-WebRequest` reported `DOWN`, but TCP and curl checks showed localhost was responding.
+- Fixed Feature 13 button flow so `Research Company` waits inline, shows a pending state, saves the dossier, refreshes the page, and renders saved research.
+- Fixed Adzuna preview-description handling by changing the truncated-description affordance to open the original source directly. Browserbase extraction for this path was removed because Adzuna can serve Access Denied / suspicious behavior pages to automated requests.
+- Fixed Feature 14 dashboard mismatch where a `Profile needs attention` banner appeared above the stats even though it was not in the uploaded design.
+- Fixed dashboard chart overflow: x-axis labels and plots now stay inside their cards, and match score bucket labels use nowrap handling.
 
 ## Current state
 
-- Feature 01 Homepage is complete.
-- Feature 02 Auth is complete.
-- Feature 03 PostHog Initialization is complete.
-- Feature 04 Database Schema is complete.
-- Feature 05 Profile Page - Full UI is complete.
-- Feature 06 Profile Save Logic is complete.
-- Feature 07 AI Profile Extraction from Resume is complete and confirmed working.
-- Feature 08 Resume PDF Generation from Profile is complete.
-- Current project phase is Phase 3 - Find Jobs Page.
-- Next feature is Feature 09 Find Jobs Page - Full UI.
-- `progress-tracker.md` is updated through Feature 08.
-- `ui-registry.md` is updated for the Feature 08 resume generation UI/API patterns.
-- Full `npm run lint` is still known to fail because ESLint scans `.agents/skills/...` helper scripts; use the scoped lint command.
-- `npm install @react-pdf/renderer` reported 4 audit vulnerabilities. No audit fix was run because dependency audit cleanup was outside Feature 08 scope.
+- Phase 1 Foundation is complete.
+- Phase 2 Profile Page is complete.
+- Phase 3 Find Jobs Page is complete.
+- Phase 4 Job Details Page is complete.
+- Phase 5 Dashboard has Feature 14 complete.
+- Current project phase is Phase 5 - Dashboard.
+- Last completed feature is Feature 14 Dashboard Page - Full UI.
+- Next feature is Feature 15 Stats Bar - Real Data.
+- `context/progress-tracker.md` is updated through Feature 14 and lists Feature 15 next.
+- `context/ui-registry.md` is updated with Dashboard Page, Stats Bar, Recent Activity, and Analytics Charts patterns.
+- Full `npm run lint` is still known to be avoided because ESLint can scan `.agents/skills/...`; use the scoped lint command.
+- Browser plugin verification has repeatedly failed in this environment with a Windows sandbox `spawn setup refresh` error, even though local route/build checks pass.
 
-Verified after Feature 08 work:
+Verified after latest work:
 - `npx tsc --noEmit`
 - `npx eslint app components actions lib agent proxy.ts`
 - `npm run build`
-- Local smoke check: `curl.exe -I http://localhost:3000/profile` returns 307 to `/login?next=%2Fprofile`.
+- Dashboard token scan for raw Tailwind color classes or hex values.
+- Confirmed no dashboard references remain to `ProfileAttentionBanner`, `Profile needs attention`, `profileIsComplete`, `completionPercentage`, or `missingFields`.
+- Local unauthenticated `/dashboard` returns the expected redirect to `/login?next=%2Fdashboard`.
 
 ## Next session starts with
 
-Run `/remember restore`, then begin Feature 09 Find Jobs Page - Full UI from `context/build-plan.md`.
+Run `/remember restore`, then begin Feature 15 Stats Bar - Real Data from `context/build-plan.md`.
 
-Before implementing Feature 09:
-- Read the required context files from `AGENTS.md`.
-- Use `/architect` because Feature 09 is a full page UI feature.
-- Preserve the existing top-nav protected route shell and route-level auth check.
-- Build with mock data first, no Adzuna or database logic yet.
-- Use project tokens only; no raw Tailwind color classes or hardcoded component colors.
+Before implementing Feature 15:
+- Read the required context files from `AGENTS.md` in order.
+- Use the InsForge app-code skill because Feature 15 reads dashboard stats from the database.
+- Keep `/dashboard` as a Server Component and scope all queries to the signed-in `user_id`.
+- Replace only the four stat card values with real data:
+  - Total Jobs Found: count `jobs` for the current user.
+  - Avg. Match Rate: average `jobs.match_score` for the current user.
+  - Companies Researched: count jobs with non-null `company_research` for the current user.
+  - Jobs This Week: count jobs with `found_at` in the last seven days for the current user.
+- Keep Recent Activity and charts mocked until Features 16 and 17.
 - Update `context/progress-tracker.md` and `context/ui-registry.md` after the feature.
 
 ## Open questions
 
-- None for Feature 08.
+- No open questions for completed Features 13-14.
+- Feature 15 needs to decide whether trend badges remain mock/static or are hidden/derived when only current aggregate data is available.

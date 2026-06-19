@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { StatsBar } from "@/components/dashboard/StatsBar";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { createInsforgeServer } from "@/lib/insforge-server";
 
@@ -14,14 +17,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader userId={user.id} />
-      <main className="px-8 py-8">
-        <section className="mx-auto max-w-[1280px] rounded-xl border border-border bg-surface p-6 shadow-sm">
-          <p className="text-sm font-medium leading-5 text-text-secondary">Dashboard</p>
-          <h1 className="mt-2 text-2xl font-semibold leading-8 text-text-primary">
-            Welcome back
-          </h1>
-        </section>
+      <AppHeader activeHref="/dashboard" showSignOut={false} userId={user.id} />
+      <main className="px-8 py-12">
+        <div className="mx-auto max-w-[2360px] space-y-10">
+          <StatsBar />
+          <div className="grid grid-cols-1 gap-10 xl:grid-cols-12">
+            <div className="xl:col-span-6">
+              <RecentActivity />
+            </div>
+            <AnalyticsCharts />
+          </div>
+        </div>
       </main>
     </div>
   );
