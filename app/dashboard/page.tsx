@@ -395,7 +395,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader activeHref="/dashboard" showSignOut={false} userId={user.id} />
+      <AppHeader activeHref="/dashboard" userId={user.id} />
       <main className="px-8 py-12">
         <div className="mx-auto max-w-[2360px] space-y-10">
           <StatsBar stats={dashboardStats} />

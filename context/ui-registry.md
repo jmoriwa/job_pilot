@@ -416,7 +416,7 @@ Last updated: 2026-06-12
 | Accent usage     | `border-accent text-accent` for active route                          |
 
 **Pattern notes:**
-Authenticated headers can receive `activeHref` to render icon + text nav items with an accent underline. Profile hides logout only to match the provided mockup; other protected routes keep the existing sign-out action.
+Authenticated headers can receive `activeHref` to render icon + text nav items with an accent underline. Protected routes show the shared sign-out action by default so signed-in users can log out from the top navbar.
 
 ### Find Jobs Search Controls
 

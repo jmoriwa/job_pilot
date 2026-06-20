@@ -31,7 +31,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader userId={user.id} activeHref="/profile" showSignOut={false} />
+      <AppHeader userId={user.id} activeHref="/profile" />
       <main className="space-y-14 px-8 py-14">
         {!profile.is_complete ? (
           <ProfileAttentionBanner

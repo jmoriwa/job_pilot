@@ -223,7 +223,7 @@ export default async function FindJobsPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader userId={user.id} activeHref="/find-jobs" showSignOut={false} />
+      <AppHeader userId={user.id} activeHref="/find-jobs" />
       <main className="px-8 py-12">
         <div className="mx-auto max-w-[2360px] space-y-10">
           <SearchControls />
