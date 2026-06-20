@@ -7,8 +7,8 @@ Update this file after every completed feature. Any AI agent reading this should
 ## Current Status
 
 **Phase:** Phase 5 - Dashboard
-**Last completed:** 14 Dashboard Page - Full UI
-**Next:** 15 Stats Bar - Real Data
+**Last completed:** 17 Analytics Charts - InsForge Data
+**Next:** Complete
 
 ---
 
@@ -42,9 +42,9 @@ Update this file after every completed feature. Any AI agent reading this should
 ### Phase 5 - Dashboard
 
 - [x] 14 Dashboard Page - Full UI
-- [ ] 15 Stats Bar - Real Data
-- [ ] 16 Recent Activity - Real Data
-- [ ] 17 Analytics Charts - PostHog Data
+- [x] 15 Stats Bar - Real Data
+- [x] 16 Recent Activity - Real Data
+- [x] 17 Analytics Charts - InsForge Data
 
 ---
 
@@ -121,6 +121,14 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-06-19: Completed Feature 14 Dashboard Page Full UI with mock data. Replaced the `/dashboard` placeholder with the screenshot-matched stat cards, recent activity timeline, Company Research Activity bar chart, Jobs Found Over Time line chart, Match Score Distribution bar chart, and active Dashboard nav state.
 - 2026-06-19: Followed `context/designs/dashboard.png` over the build-plan wording where they differ. The screenshot uses `Jobs This Week` as the fourth stat and `Company Research Activity` as the top chart, so Feature 14 uses those labels while leaving real dashboard data for Features 15-17.
 - 2026-06-19: Reviewed Feature 14 against the uploaded dashboard design and removed the dashboard `Profile needs attention` banner because it is not present in `context/designs/dashboard.png`. The chart layouts now keep plots and axis labels inside their cards so score buckets and day labels do not spill below or outside the dashboard cards.
+- 2026-06-19: Completed Feature 15 by wiring the dashboard stat cards to owner-scoped InsForge `jobs` data. `/dashboard` now calculates Total Jobs Found, Avg. Match Rate, Companies Researched, and Jobs This Week from the signed-in user's saved jobs while leaving Recent Activity and charts mocked for Features 16 and 17.
+- 2026-06-19: Removed mock trend badges from the real stats cards because week-over-week comparison data is not part of Feature 15.
+- 2026-06-19: Completed Feature 16 by wiring the dashboard Recent Activity card to owner-scoped InsForge data. `/dashboard` now queries completed `agent_runs` and recently updated `jobs`, normalizes completed job searches and company research entries into a single feed, sorts by timestamp, caps the feed at 10 entries, and keeps analytics charts mocked for Feature 17.
+- 2026-06-19: Company research activity uses `jobs.updated_at` as the activity timestamp because saving `jobs.company_research` updates the row through the existing trigger.
+- 2026-06-19: Completed Feature 17 by wiring dashboard analytics charts to PostHog Query API HogQL reads. `/dashboard` now fetches `job_found` and `company_researched` event aggregates for the signed-in user, renders Jobs Found Over Time, Match Score Distribution, and Company Research Activity from real PostHog data, and falls back to empty chart states when credentials are missing or queries fail.
+- 2026-06-19: Feature 17 intentionally reused the existing CSS/SVG chart components instead of installing Recharts, because Recharts was not in the approved dependency list and the Feature 14 chart visuals already matched the dashboard design.
+- 2026-06-19: Patched Feature 17 after analytics cards did not update despite captured PostHog activity. Root causes found in local env/config: `NEXT_PUBLIC_POSTHOG_HOST` points at the ingestion host `https://us.i.posthog.com`, while HogQL queries need the app/API host; `.env.local` also did not contain `POSTHOG_PROJECT_ID` or `POSTHOG_PERSONAL_API_KEY`. The helper now supports `POSTHOG_QUERY_HOST`, derives `https://us.posthog.com` from the ingestion host when possible, and filters events by both `distinct_id` and `properties.userId`.
+- 2026-06-19: Reworked Feature 17 to use InsForge `jobs` as the authoritative dashboard analytics source instead of PostHog Query API. `/dashboard` now derives Jobs Found Over Time from `jobs.found_at`, Match Score Distribution from `jobs.match_score`, and Company Research Activity from non-empty `jobs.company_research` grouped by `jobs.updated_at`. PostHog capture remains in place for product analytics but is no longer used for dashboard chart reads.
 - 2026-06-18: After Feature 08, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, and `npm run build` pass. Local dev server is running at `http://localhost:3000`; `curl.exe -I http://localhost:3000/profile` returns 307 to `/login?next=%2Fprofile`. `npm install @react-pdf/renderer` completed and reported 4 audit vulnerabilities; no audit fix was run because dependency audit cleanup is outside Feature 08 scope.
 - 2026-06-19: After Feature 09, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, and `npm run build` pass.
 - 2026-06-19: After Feature 10, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, and `npm run build` pass. Local unauthenticated `POST /api/agent/find` with valid JSON returns 401 and `{ "success": false, "error": "Please sign in before finding jobs." }`.
@@ -136,3 +144,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - 2026-06-19: Replaced the failed full-description extraction flow after Adzuna returned an Access Denied / suspicious behavior page to Browserbase. Removed `agent/jobDescription.ts` and `app/api/agent/job-description/route.ts`; the truncated-description notice now links directly to the saved source/apply URL in a new tab with an `Open source` action. `npm run build`, `npx tsc --noEmit`, scoped ESLint, and a Job Details token scan pass after the pivot.
 - 2026-06-19: After Feature 14, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass. An ASCII scan of touched app/component files passes; the only non-ASCII hits are pre-existing punctuation in context docs. In-app browser verification was not run because the browser Node runtime had previously failed repeatedly with a Windows sandbox spawn error.
 - 2026-06-19: After the Feature 14 chart/banner correction, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass.
+- 2026-06-19: After Feature 15, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass. The verification commands required approved escalation because the Windows sandbox hit `spawn setup refresh` before running them.
+- 2026-06-19: After Feature 16, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass. The verification commands required approved escalation because the Windows sandbox hit `spawn setup refresh` before running them.
+- 2026-06-19: After Feature 17, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass. The verification commands required approved escalation because the Windows sandbox hit `spawn setup refresh` before running them.
+- 2026-06-19: After reworking Feature 17 to use InsForge `jobs` for dashboard analytics, `npx tsc --noEmit`, scoped `npx eslint app components actions lib agent proxy.ts`, `npm run build`, and a Dashboard token class scan pass. The verification commands required approved escalation because the Windows sandbox hit `spawn setup refresh` before running them.
+- 2026-06-19: Dashboard polish capped Recent Activity at the latest 50 merged entries, fixed the card height to match the adjacent Company Research Activity card, and moved overflow to an internal scroll region so long activity histories do not stretch the dashboard top row.

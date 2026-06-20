@@ -231,8 +231,7 @@ All PostHog events must use these exact event names. Never invent new event name
 
 These four events are the only events in this project. Do not add more without updating this list first.
 
-`job_found` powers the Jobs Found Over Time and Match Score Distribution dashboard charts.
-`company_researched` powers the Company Research Activity dashboard chart.
+Dashboard charts use owner-scoped InsForge `jobs` rows as the authoritative source. PostHog events remain available for product analytics outside the dashboard.
 Always fire these with correct properties.
 
 ---

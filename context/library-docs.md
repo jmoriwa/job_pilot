@@ -587,8 +587,6 @@ await posthog.shutdown(); // required — ensures event is sent
 - Call `posthog.identify(userId)` after login on client side
 - Call `posthog.reset()` on logout on client side
 
----
-
 ## @react-pdf/renderer
 
 **Check first:** Check AGENTS.md for an installed react-pdf skill. PDF generation APIs can differ from general training knowledge.

@@ -567,16 +567,16 @@ Last updated: 2026-06-19
 | ---------------- | --------------------------------------------------------------------- |
 | Background       | cards use `bg-surface`                                                |
 | Border           | `border border-border`                                                |
-| Border radius    | `rounded-xl`, trend badges use `rounded-sm`                           |
+| Border radius    | `rounded-xl`                                                          |
 | Text - primary   | stat value uses `text-text-primary`                                   |
 | Text - secondary | labels use `text-text-secondary`, helper text uses `text-text-muted`  |
 | Spacing          | grid `gap-6`, card `p-8`, value `mt-2`, footer `mt-4 gap-3`           |
 | Hover state      | none                                                                  |
 | Shadow           | `shadow-sm`                                                           |
-| Accent usage     | trend badges use `bg-success-lightest text-success-darker`            |
+| Accent usage     | none                                                                  |
 
 **Pattern notes:**
-Dashboard stat cards are mock-only for Feature 14 and use the screenshot values: Total Jobs Found, Avg. Match Rate, Companies Researched, and Jobs This Week. The first two cards show compact square trend badges; the latter two show muted helper text only.
+Feature 15 keeps the Feature 14 card layout but replaces the four screenshot values with real owner-scoped InsForge data from `/dashboard`: Total Jobs Found, Avg. Match Rate, Companies Researched, and Jobs This Week. Mock trend badges were removed because week-over-week comparison data is not available until a later feature explicitly adds it.
 
 ### Dashboard Recent Activity
 
@@ -590,13 +590,13 @@ Last updated: 2026-06-19
 | Border radius    | `rounded-xl`, activity dots use `rounded-full`                        |
 | Text - primary   | activity labels use `text-text-primary`                               |
 | Text - secondary | timestamps use `text-text-muted`                                      |
-| Spacing          | header `px-8 py-7`, body `px-8 py-8`, list `space-y-8`, rows `gap-6` |
+| Spacing          | card `h-[472px]`, header `px-8 py-7`, body `px-8 py-8`, list `space-y-8`, rows `gap-6` |
 | Hover state      | none                                                                  |
 | Shadow           | `shadow-sm`                                                           |
 | Accent usage     | dots use `bg-accent-light/bg-accent`, `bg-info-light/bg-info`, and `bg-success-light/bg-success-alt` |
 
 **Pattern notes:**
-The activity list uses a simple vertical timeline with token-colored dots and a subtle connector line. Feature 14 activity entries are mock strings and timestamps only; real activity merging is deferred to Feature 16.
+The activity list uses a simple vertical timeline with token-colored dots and a subtle connector line. Feature 16 makes the card data-driven: completed `agent_runs` render as success-dot `Found X jobs for {search}` entries, populated `jobs.company_research` records render as info-dot `Researched {company}` entries, and the route merges/sorts the feed by timestamp before passing it to the component. The dashboard polish pass caps the merged feed at 50 entries, fixes the card to `h-[472px]` to visually align with Company Research Activity, keeps the header fixed, and scrolls only the body with `overflow-y-auto`. Empty accounts render a centered text-only empty state inside the same fixed card body.
 
 ### Dashboard Analytics Charts
 
@@ -616,4 +616,4 @@ Last updated: 2026-06-19
 | Accent usage     | company bars use `bg-info`, match bars use `bg-success`, jobs line uses `text-accent` and token SVG stops |
 
 **Pattern notes:**
-Feature 14 charts are static mock visuals built with CSS and SVG instead of a charting dependency. The parent dashboard grid gives Company Research Activity `xl:col-span-6`, Jobs Found Over Time `xl:col-span-8`, and Match Score Distribution `xl:col-span-4` to match the screenshot's top-half and bottom two-thirds/one-third layout. Axis labels are normal-flow content below the plot area, not negatively positioned, so they stay inside their cards and score bucket labels use `whitespace-nowrap`.
+Feature 17 keeps the Feature 14 CSS/SVG chart system but feeds it real owner-scoped InsForge `jobs` data from `/dashboard`. Company Research Activity renders the last 7 days of non-empty `company_research` counts grouped by `updated_at`, Jobs Found Over Time renders the last 30 days of `found_at` counts as a generated SVG path, and Match Score Distribution renders fixed buckets from `match_score`. Dynamic bar heights map to a fixed list of Tailwind height classes, the top chart card uses `self-start` so it does not stretch to match the adjacent Recent Activity timeline, y-axis labels stay inside the plot area without negative translation, compact score bucket labels render over two lines in narrow cards, and empty chart states use `bg-surface-secondary` inside the same card frame.
