@@ -76,5 +76,5 @@ export async function signOut(): Promise<void> {
   clearAuthCookies(cookieStore);
   cookieStore.delete("insforge_csrf_token");
 
-  redirect("/login");
+  redirect("/");
 }
